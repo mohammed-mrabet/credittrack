@@ -1,0 +1,17 @@
+<div class="layout">
+  <aside class="sidebar">
+    <a routerLink="/" class="brand">
+      <span class="brand__logo">CT</span>
+      <span>Credit<strong>Track</strong></span>
+    </a>
+    <nav>
+      @for (item of nav; track item.path) {
+        <a [routerLink]="item.path" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: item.exact }">{{ item.label }}</a>
+      }
+    </nav>
+    <p class="sidebar__footer">Projet personnel · Symfony 7 &amp; Angular 19</p>
+  </aside>
+  <main class="content">
+    <router-outlet />
+  </main>
+</div>

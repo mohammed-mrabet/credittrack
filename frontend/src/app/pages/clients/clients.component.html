@@ -1,0 +1,61 @@
+<header class="page-header">
+  <div>
+    <h1>Clients</h1>
+    <p class="muted">{{ clients().length }} clients enregistrés</p>
+  </div>
+</header>
+
+<div class="grid-2 grid-2--wide">
+  <section class="card card--flush">
+    <table class="table">
+      <thead>
+        <tr><th>Client</th><th>Contact</th><th>Ajouté le</th><th></th></tr>
+      </thead>
+      <tbody>
+        @for (c of clients(); track c.id) {
+          <tr>
+            <td><strong>{{ c.name }}</strong></td>
+            <td>
+              {{ c.email ?? '—' }}
+              @if (c.phone) {
+                <br /><span class="muted small">{{ c.phone }}</span>
+              }
+            </td>
+            <td>{{ c.createdAt | date: 'dd/MM/yyyy' }}</td>
+            <td class="actions"><a routerLink="/factures" [queryParams]="{ client: c.id }">Voir ses factures</a></td>
+          </tr>
+        } @empty {
+          <tr><td colspan="4" class="muted empty">Aucun client pour le moment.</td></tr>
+        }
+      </tbody>
+    </table>
+  </section>
+
+  <form class="card form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <h2>Ajouter un client</h2>
+    <label>
+      Raison sociale
+      <input type="text" formControlName="name" placeholder="Ex. : Atlas Distribution SARL" />
+      @if (form.controls.name.invalid && form.controls.name.touched) {
+        <span class="field-error">Le nom est obligatoire.</span>
+      }
+      @if (serverErrors()['name']) {
+        <span class="field-error">{{ serverErrors()['name'] }}</span>
+      }
+    </label>
+    <label>
+      E-mail
+      <input type="email" formControlName="email" placeholder="compta@exemple.ma" />
+      @if ((form.controls.email.invalid && form.controls.email.touched) || serverErrors()['email']) {
+        <span class="field-error">Adresse e-mail invalide.</span>
+      }
+    </label>
+    <label>
+      Téléphone
+      <input type="tel" formControlName="phone" placeholder="0536 00 00 00" />
+    </label>
+    <div class="form__actions">
+      <button type="submit" class="btn btn--primary">Ajouter</button>
+    </div>
+  </form>
+</div>

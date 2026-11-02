@@ -1,0 +1,85 @@
+<header class="page-header">
+  <div>
+    <h1>Tableau de bord</h1>
+    <p class="muted">Suivi des créances clients en temps réel</p>
+  </div>
+  <a routerLink="/factures/nouvelle" class="btn btn--primary">+ Nouvelle facture</a>
+</header>
+
+@if (error()) {
+  <div class="alert">{{ error() }}</div>
+}
+
+@if (data(); as d) {
+  <section class="kpis">
+    <article class="kpi">
+      <span class="kpi__label">Encours total</span>
+      <strong class="kpi__value">{{ d.outstanding | currency: 'MAD' : 'code' : '1.0-0' }}</strong>
+      <span class="kpi__hint">{{ d.unpaid.count + d.overdue.count }} factures non payées</span>
+    </article>
+    <article class="kpi kpi--danger">
+      <span class="kpi__label">En retard</span>
+      <strong class="kpi__value">{{ d.overdue.total | currency: 'MAD' : 'code' : '1.0-0' }}</strong>
+      <span class="kpi__hint">{{ d.overdue.count }} factures à relancer</span>
+    </article>
+    <article class="kpi kpi--warning">
+      <span class="kpi__label">À échéance</span>
+      <strong class="kpi__value">{{ d.unpaid.total | currency: 'MAD' : 'code' : '1.0-0' }}</strong>
+      <span class="kpi__hint">{{ d.unpaid.count }} factures dans les délais</span>
+    </article>
+    <article class="kpi kpi--success">
+      <span class="kpi__label">Taux d'encaissement</span>
+      <strong class="kpi__value">{{ d.collectionRate | number: '1.0-1' }} %</strong>
+      <span class="kpi__hint">{{ d.paid.total | currency: 'MAD' : 'code' : '1.0-0' }} encaissés</span>
+    </article>
+  </section>
+
+  <div class="grid-2">
+    <section class="card">
+      <h2>Encours par client</h2>
+      <ul class="bars">
+        @for (c of d.topClients; track c.clientId) {
+          <li>
+            <div class="bars__label">
+              <span>{{ c.clientName }}</span>
+              <strong>{{ c.outstanding | currency: 'MAD' : 'code' : '1.0-0' }}</strong>
+            </div>
+            <div class="bars__track" [title]="'Dont en retard : ' + (c.overdue | number: '1.0-0') + ' MAD'">
+              <div class="bars__fill bars__fill--overdue" [style.width.%]="(c.overdue / maxOutstanding()) * 100"></div>
+              <div class="bars__fill" [style.width.%]="((c.outstanding - c.overdue) / maxOutstanding()) * 100"></div>
+            </div>
+          </li>
+        } @empty {
+          <li class="muted">Aucun encours. Toutes les factures sont payées.</li>
+        }
+      </ul>
+      <p class="legend"><span class="dot dot--overdue"></span> en retard <span class="dot"></span> à échéance</p>
+    </section>
+
+    <section class="card">
+      <div class="card__header">
+        <h2>Factures en retard</h2>
+        <a routerLink="/factures" [queryParams]="{ statut: 'overdue' }">Tout voir</a>
+      </div>
+      <table class="table">
+        <thead>
+          <tr><th>Facture</th><th>Client</th><th class="num">Montant</th><th class="num">Retard</th></tr>
+        </thead>
+        <tbody>
+          @for (i of d.overdueInvoices; track i.id) {
+            <tr>
+              <td><strong class="nowrap">{{ i.number }}</strong><br /><span class="muted small">échue le {{ i.dueDate | date: 'dd/MM/yyyy' }}</span></td>
+              <td>{{ i.client.name }}</td>
+              <td class="num">{{ i.amount | currency: 'MAD' : 'code' : '1.2-2' }}</td>
+              <td class="num"><span class="late">{{ i.daysOverdue }} j</span></td>
+            </tr>
+          } @empty {
+            <tr><td colspan="4" class="muted">Aucune facture en retard.</td></tr>
+          }
+        </tbody>
+      </table>
+    </section>
+  </div>
+} @else if (!error()) {
+  <p class="muted">Chargement…</p>
+}

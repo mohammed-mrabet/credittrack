@@ -1,0 +1,72 @@
+<header class="page-header">
+  <div>
+    <h1>Nouvelle facture</h1>
+    <p class="muted">Le numéro (FAC-AAAA-NNNN) est attribué automatiquement.</p>
+  </div>
+</header>
+
+<form class="card form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+  @if (serverErrors()['global']) {
+    <div class="alert">{{ serverErrors()['global'] }}</div>
+  }
+
+  <label>
+    Client
+    <select formControlName="clientId" [class.is-invalid]="invalid('clientId')">
+      <option [ngValue]="0" disabled>Choisir un client…</option>
+      @for (c of clients(); track c.id) {
+        <option [ngValue]="c.id">{{ c.name }}</option>
+      }
+    </select>
+    @if (invalid('clientId')) {
+      <span class="field-error">Sélectionnez un client.</span>
+    }
+    @if (serverErrors()['clientId']) {
+      <span class="field-error">{{ serverErrors()['clientId'] }}</span>
+    }
+    <a routerLink="/clients" class="small">+ Ajouter un client</a>
+  </label>
+
+  <label>
+    Montant (MAD)
+    <input type="number" step="0.01" min="0" formControlName="amount" placeholder="0,00" [class.is-invalid]="invalid('amount')" />
+    @if (invalid('amount')) {
+      <span class="field-error">Indiquez un montant supérieur à 0.</span>
+    }
+    @if (serverErrors()['amount']) {
+      <span class="field-error">{{ serverErrors()['amount'] }}</span>
+    }
+  </label>
+
+  <div class="form__row">
+    <label>
+      Date d'émission
+      <input type="date" formControlName="issueDate" />
+    </label>
+    <label>
+      Échéance
+      <input type="date" formControlName="dueDate" [class.is-invalid]="form.hasError('dueBeforeIssue')" />
+      <span class="terms">
+        @for (d of [30, 45, 60]; track d) {
+          <button type="button" class="chip" (click)="setTerm(d)">{{ d }} jours</button>
+        }
+      </span>
+    </label>
+  </div>
+  @if (form.hasError('dueBeforeIssue')) {
+    <span class="field-error">L'échéance doit être postérieure à la date d'émission.</span>
+  }
+  @if (serverErrors()['dueDate']) {
+    <span class="field-error">{{ serverErrors()['dueDate'] }}</span>
+  }
+
+  <label>
+    <span>Description <span class="muted">(facultatif)</span></span>
+    <input type="text" formControlName="description" maxlength="255" placeholder="Ex. : Maintenance annuelle du parc informatique" />
+  </label>
+
+  <div class="form__actions">
+    <a routerLink="/factures" class="btn btn--ghost">Annuler</a>
+    <button type="submit" class="btn btn--primary" [disabled]="saving()">{{ saving() ? 'Enregistrement…' : 'Créer la facture' }}</button>
+  </div>
+</form>

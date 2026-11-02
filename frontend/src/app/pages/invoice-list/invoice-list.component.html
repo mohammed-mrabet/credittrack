@@ -1,0 +1,81 @@
+<header class="page-header">
+  <div>
+    <h1>Factures</h1>
+    <p class="muted">{{ invoices().length }} factures · {{ total() | currency: 'MAD' : 'code' : '1.2-2' }}</p>
+  </div>
+  <a routerLink="/factures/nouvelle" class="btn btn--primary">+ Nouvelle facture</a>
+</header>
+
+<div class="toolbar">
+  <div class="tabs" role="tablist">
+    @for (t of tabs; track t.value) {
+      <button type="button" role="tab" class="tab" [class.tab--active]="status === t.value" (click)="setStatus(t.value)">
+        {{ t.label }}
+      </button>
+    }
+  </div>
+  <div class="filters">
+    <input type="search" placeholder="N° de facture ou client…" [(ngModel)]="q" (keyup.enter)="load()" (search)="load()" />
+    <select [(ngModel)]="clientId" (ngModelChange)="load()" aria-label="Filtrer par client">
+      <option [ngValue]="null">Tous les clients</option>
+      @for (c of clients(); track c.id) {
+        <option [ngValue]="c.id">{{ c.name }}</option>
+      }
+    </select>
+  </div>
+</div>
+
+@if (error()) {
+  <div class="alert">{{ error() }}</div>
+}
+
+<section class="card card--flush">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Facture</th>
+        <th>Client</th>
+        <th>Émise le</th>
+        <th>Échéance</th>
+        <th class="num">Montant</th>
+        <th>Statut</th>
+        <th class="actions"></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (i of invoices(); track i.id) {
+        <tr>
+          <td>
+            <strong class="nowrap">{{ i.number }}</strong>
+            @if (i.description) {
+              <br /><span class="muted small">{{ i.description }}</span>
+            }
+          </td>
+          <td>{{ i.client.name }}</td>
+          <td>{{ i.issueDate | date: 'dd/MM/yyyy' }}</td>
+          <td>
+            {{ i.dueDate | date: 'dd/MM/yyyy' }}
+            @if (i.status === 'overdue') {
+              <br /><span class="late small">+{{ i.daysOverdue }} jours</span>
+            }
+            @if (i.paidAt) {
+              <br /><span class="muted small">payée le {{ i.paidAt | date: 'dd/MM/yyyy' }}</span>
+            }
+          </td>
+          <td class="num">{{ i.amount | currency: 'MAD' : 'code' : '1.2-2' }}</td>
+          <td><app-status-badge [status]="i.status" /></td>
+          <td class="actions">
+            @if (i.status !== 'paid') {
+              <button type="button" class="btn btn--small" (click)="pay(i)">Marquer payée</button>
+            }
+            <button type="button" class="btn btn--small btn--ghost" (click)="remove(i)" aria-label="Supprimer">✕</button>
+          </td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="7" class="muted empty">{{ loading() ? 'Chargement…' : 'Aucune facture ne correspond à ces filtres.' }}</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</section>
