@@ -24,7 +24,7 @@
 
 | Couche | Technologies |
 |---|---|
-| Backend | PHP 8.3, **Symfony 7.3**, Doctrine ORM 3, Doctrine Migrations |
+| Backend | PHP 8.3, **Symfony 7.4 (LTS)**, Doctrine ORM 3, Doctrine Migrations |
 | Base de données | **PostgreSQL 16** |
 | Frontend | **Angular 19** (composants standalone, signals, formulaires réactifs), TypeScript, SCSS |
 | Tests | PHPUnit (règles métier), Jasmine / Karma (service HTTP, validateurs) |
